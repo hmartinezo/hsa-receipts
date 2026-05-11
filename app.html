@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HSA Tracker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand"><span>💊</span> HSA Tracker</div>
+  <div class="nav-links">
+    <button class="active" data-view="add">Add Expense</button>
+    <button data-view="expenses">My Expenses</button>
+  </div>
+  <div class="nav-user">
+    <span id="userEmail"></span>
+    <div class="avatar" id="userAvatar">??</div>
+    <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- ═══════════ ADD EXPENSE VIEW ═══════════ -->
+<div class="view active" id="view-add">
+  <div class="container">
+    <div class="form-card">
+      <h2>📝 New Expense</h2>
+
+      <div class="form-group full">
+        <label for="expenseName">Expense Name</label>
+        <input type="text" id="expenseName" placeholder="e.g. Dental Cleaning, Eye Exam, Prescription">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="expenseDate">Date</label>
+          <input type="date" id="expenseDate">
+        </div>
+        <div class="form-group">
+          <label for="expenseAmount">Amount ($)</label>
+          <input type="number" id="expenseAmount" placeholder="0.00" min="0" step="0.01">
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <label>Receipt</label>
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp">
+          <div class="dropzone-icon">📄</div>
+          <div class="dropzone-text">
+            Drag &amp; drop your receipt here<br>
+            or <strong>click to browse</strong><br>
+            <small>PDF, JPG, PNG -- max 10 MB</small>
+          </div>
+        </div>
+        <div class="file-preview" id="filePreview">
+          <span>📎</span>
+          <span class="file-name" id="fileName"></span>
+          <button class="remove-file" onclick="removeFile()" title="Remove file">&#10005;</button>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="submitExpense()">
+        <span id="submitText">✅ Submit Expense</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MY EXPENSES VIEW ═══════════ -->
+<div class="view" id="view-expenses">
+  <div class="container">
+
+    <!-- Summary cards -->
+    <div class="summary">
+      <div class="stat-card total">
+        <div class="value" id="totalVal">$0.00</div>
+        <div class="label">Total Expenses</div>
+      </div>
+      <div class="stat-card reimbursed-card">
+        <div class="value" id="reimbVal">$0.00</div>
+        <div class="label">Reimbursed</div>
+      </div>
+      <div class="stat-card pending-card">
+        <div class="value" id="pendingVal">$0.00</div>
+        <div class="label">Pending</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="pending">Pending</button>
+        <button class="filter-btn" data-filter="done">Reimbursed</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <label style="font-size:12px;margin:0">Year:</label>
+        <select class="year-select" id="yearFilter">
+          <option value="all">All Years</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <table class="data-table" id="expenseTable">
+        <thead>
+          <tr>
+            <th class="no-sort" style="width:40px">
+              <div class="cb">
+                <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)">
+                <div class="checkmark"></div>
+              </div>
+            </th>
+            <th data-col="name">Expense <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="date">Date <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="amount">Amount <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="reimbursed">Reimbursed <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="reimbDate">Reimburse Date <span class="sort-arrow">&#9650;</span></th>
+            <th class="no-sort">Receipt</th>
+            <th class="no-sort" style="width:80px">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="expenseBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ACTION BAR -->
+<div class="action-bar" id="actionBar">
+  <div class="info"><span id="selCount">0</span> selected</div>
+  <div class="divider"></div>
+  <div class="info">Total: <strong id="selTotal">$0.00</strong></div>
+  <div class="divider"></div>
+  <button class="reimburse-btn" onclick="openModal()">💰 Mark as Reimbursed</button>
+</div>
+
+<!-- REIMBURSEMENT MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>💰 Confirm Reimbursement</h2>
+    <div class="modal-items" id="modalItems"></div>
+    <div class="modal-total">
+      <span>Total</span>
+      <span class="mt-amount" id="modalTotal">$0.00</span>
+    </div>
+    <div class="modal-date">
+      <label>Reimbursement Date</label>
+      <input type="date" id="reimbDate">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" id="confirmBtn" onclick="confirmReimburse()">✅ Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h2>✏️ Edit Expense</h2>
+    <input type="hidden" id="editRow">
+    <div class="form-group full" style="margin-bottom:16px">
+      <label for="editName">Expense Name</label>
+      <input type="text" id="editName">
+    </div>
+    <div class="form-row" style="margin-bottom:16px">
+      <div class="form-group">
+        <label for="editDate">Date</label>
+        <input type="date" id="editDate">
+      </div>
+      <div class="form-group">
+        <label for="editAmount">Amount ($)</label>
+        <input type="number" id="editAmount" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-confirm" id="editSaveBtn" onclick="saveEdit()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h2>🗑️ Delete Expense</h2>
+    <input type="hidden" id="deleteRow">
+    <p style="margin-bottom:20px;color:var(--text-muted)">Are you sure you want to delete <strong id="deleteName"></strong>?</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn-confirm" id="deleteConfirmBtn" onclick="confirmDeleteExpense()" style="background:linear-gradient(135deg,#e74c3c,#c0392b);box-shadow:0 4px 12px rgba(231,76,60,.25)">🗑️ Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p id="loadingText">Loading expenses...</p>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
