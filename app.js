@@ -629,20 +629,24 @@ async function ensureBalancesSheet() {
   var exists = meta.sheets.some(function (s) { return s.properties.title === CONFIG.BALANCE_SHEET_NAME; });
   if (exists) return;
 
-  // Create the sheet and add headers
+  // Create the sheet and add headers + seed data from financial statements
   var batchUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.SPREADSHEET_ID + ':batchUpdate';
   await apiFetch(batchUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ requests: [{ addSheet: { properties: { title: CONFIG.BALANCE_SHEET_NAME } } }] }),
   });
-  var hdrRange = encodeURIComponent(CONFIG.BALANCE_SHEET_NAME + '!A1:C1');
-  var hdrUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.SPREADSHEET_ID
-    + '/values/' + hdrRange + '?valueInputOption=RAW';
-  await apiFetch(hdrUrl, {
+  var seedRange = encodeURIComponent(CONFIG.BALANCE_SHEET_NAME + '!A1:C4');
+  var seedUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.SPREADSHEET_ID
+    + '/values/' + seedRange + '?valueInputOption=USER_ENTERED';
+  await apiFetch(seedUrl, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ values: [['Date', 'Institution', 'Balance']] }),
+    body: JSON.stringify({ values: [
+      ['Date', 'Institution', 'Balance'],
+      ['04/30/2026', 'Optum Bank', '2582.94'],
+      ['04/30/2026', 'Betterment', '19543.42'],
+    ] }),
   });
 }
 
@@ -654,6 +658,26 @@ async function loadBalances() {
   if (!data) return;
 
   var rows = data.values || [];
+
+  // If sheet exists but has no data rows (only header or empty), seed initial balances
+  if (rows.length <= 1) {
+    var seedRange = encodeURIComponent(CONFIG.BALANCE_SHEET_NAME + '!A1:C3');
+    var seedUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.SPREADSHEET_ID
+      + '/values/' + seedRange + ':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
+    await apiFetch(seedUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [
+        ['04/30/2026', 'Optum Bank', '2582.94'],
+        ['04/30/2026', 'Betterment', '19543.42'],
+      ] }),
+    });
+    // Re-read after seeding
+    data = await apiFetch(url);
+    if (!data) return;
+    rows = data.values || [];
+  }
+
   balances = [];
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i];
