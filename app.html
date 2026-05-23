@@ -269,10 +269,186 @@
       </div>
     </div>
 
+    <!-- ═══ HSA Strategy Dashboard ═══ -->
+    <div class="inv-section">
+      <h2>🧠 HSA Strategy Dashboard</h2>
+      <div class="strategy-grid">
+
+        <!-- Tax Savings Card -->
+        <div class="strategy-card tax">
+          <div class="strategy-icon">💰</div>
+          <h3>Triple Tax Advantage</h3>
+          <div class="strategy-highlight" id="taxSavings">$0</div>
+          <div class="strategy-highlight-label">Estimated annual tax savings</div>
+          <ul class="strategy-list">
+            <li><strong>Tax-free in:</strong> Contributions reduce your taxable income</li>
+            <li><strong>Tax-free growth:</strong> Investments grow without capital gains tax</li>
+            <li><strong>Tax-free out:</strong> Withdrawals for medical expenses are never taxed</li>
+          </ul>
+          <div class="strategy-detail">
+            <span class="detail-label">Your marginal rate (est.)</span>
+            <span class="detail-value" id="taxRate">32%</span>
+          </div>
+          <div class="strategy-detail">
+            <span class="detail-label">Annual contribution</span>
+            <span class="detail-value" id="taxAnnualContrib">$8,250</span>
+          </div>
+          <div class="strategy-detail">
+            <span class="detail-label">FICA savings (7.65%)</span>
+            <span class="detail-value" id="taxFICA">$631</span>
+          </div>
+        </div>
+
+        <!-- Contribution Optimization -->
+        <div class="strategy-card contrib">
+          <div class="strategy-icon">📊</div>
+          <h3>2026 Contribution Tracker</h3>
+          <div class="contrib-progress-wrap">
+            <div class="contrib-progress-bar">
+              <div class="contrib-progress-fill" id="contribFill" style="width:0%"></div>
+            </div>
+            <div class="contrib-progress-labels">
+              <span id="contribCurrent">$0</span>
+              <span id="contribMax">$8,550</span>
+            </div>
+          </div>
+          <div class="strategy-detail">
+            <span class="detail-label">2026 Family limit</span>
+            <span class="detail-value">$8,550</span>
+          </div>
+          <div class="strategy-detail">
+            <span class="detail-label">55+ Catch-up (available 2030)</span>
+            <span class="detail-value">+$1,000</span>
+          </div>
+          <div class="strategy-detail">
+            <span class="detail-label">Your per-paycheck</span>
+            <span class="detail-value">$343.75</span>
+          </div>
+          <div class="strategy-detail">
+            <span class="detail-label">Employer match</span>
+            <span class="detail-value">$70.83/pay</span>
+          </div>
+          <div class="strategy-note">
+            <strong>Tip:</strong> You're maxing out your family contribution. At age 55 (2030), you can contribute an extra $1,000/yr catch-up.
+          </div>
+        </div>
+
+        <!-- Allocation Recommendation -->
+        <div class="strategy-card alloc">
+          <div class="strategy-icon">🎯</div>
+          <h3>Allocation Snapshot</h3>
+          <div class="alloc-bars" id="allocBars">
+            <div class="alloc-row">
+              <span class="alloc-label">Betterment (Invested)</span>
+              <div class="alloc-bar-wrap"><div class="alloc-bar betterment-bar" id="allocBetter" style="width:0%"></div></div>
+              <span class="alloc-pct" id="allocBetterPct">--</span>
+            </div>
+            <div class="alloc-row">
+              <span class="alloc-label">Optum (Cash + Funds)</span>
+              <div class="alloc-bar-wrap"><div class="alloc-bar optum-bar" id="allocOptum" style="width:0%"></div></div>
+              <span class="alloc-pct" id="allocOptumPct">--</span>
+            </div>
+          </div>
+          <div class="strategy-note" style="margin-top:16px">
+            <strong>Recommendation:</strong> Keep 1-3 months of expected medical expenses in Optum cash (~$1,500-$3,000) for liquidity. Invest the rest in Betterment for long-term growth. At 51 with a 14-year horizon, a stock-heavy allocation (80/20 or 90/10) is appropriate.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Milestones & Benchmarks ═══ -->
+    <div class="inv-section">
+      <h2>🏆 HSA Milestones</h2>
+      <div class="milestone-track" id="milestoneTrack">
+        <div class="milestone" data-target="10000">
+          <div class="milestone-marker"></div>
+          <div class="milestone-amount">$10K</div>
+          <div class="milestone-label">Starter Saver</div>
+        </div>
+        <div class="milestone" data-target="25000">
+          <div class="milestone-marker"></div>
+          <div class="milestone-amount">$25K</div>
+          <div class="milestone-label">Solid Foundation</div>
+        </div>
+        <div class="milestone" data-target="50000">
+          <div class="milestone-marker"></div>
+          <div class="milestone-amount">$50K</div>
+          <div class="milestone-label">Health Wealth Builder</div>
+        </div>
+        <div class="milestone" data-target="100000">
+          <div class="milestone-marker"></div>
+          <div class="milestone-amount">$100K</div>
+          <div class="milestone-label">Six-Figure HSA</div>
+        </div>
+        <div class="milestone" data-target="250000">
+          <div class="milestone-marker"></div>
+          <div class="milestone-amount">$250K</div>
+          <div class="milestone-label">HSA Millionaire Path</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Best Practices ═══ -->
+    <div class="inv-section">
+      <h2>📋 HSA Best Practices</h2>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-number">1</div>
+          <h4>Don't Use It — Invest It</h4>
+          <p>Pay medical bills out-of-pocket now. Let your HSA compound tax-free. Reimburse yourself years later — there's <strong>no time limit</strong> on reimbursement.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-number">2</div>
+          <h4>Save Every Receipt</h4>
+          <p>Keep all medical receipts indefinitely. You can reimburse yourself for expenses from years ago. This app does that for you automatically.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-number">3</div>
+          <h4>Max Out Every Year</h4>
+          <p>The 2026 family limit is $8,550. You're contributing $8,250/yr — consider increasing by $12.50/pay to hit the full limit.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-number">4</div>
+          <h4>After 65: It's a Stealth IRA</h4>
+          <p>After 65, you can withdraw for <em>any</em> purpose (taxed like a traditional IRA). For medical expenses, it's still 100% tax-free.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-number">5</div>
+          <h4>Invest Aggressively</h4>
+          <p>With a 14-year horizon, keep 80-100% in stocks. You won't touch this money for years — time is on your side. Betterment handles rebalancing.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-number">6</div>
+          <h4>HSA Beats 401k & Roth IRA</h4>
+          <p>401k: taxed on withdrawal. Roth: taxed on contribution. HSA: <strong>never taxed</strong> for medical — the only triple-tax-advantaged account in the US tax code.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Key Numbers Reference ═══ -->
+    <div class="inv-section">
+      <h2>📌 Key Numbers at a Glance</h2>
+      <div class="ref-table-card">
+        <table class="data-table">
+          <thead>
+            <tr><th>Item</th><th>2026</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Family contribution limit</td><td class="amount-cell">$8,550</td><td>Up from $8,300 in 2025</td></tr>
+            <tr><td>55+ catch-up contribution</td><td class="amount-cell">$1,000</td><td>Available starting 2030 (age 55)</td></tr>
+            <tr><td>Your annual contribution</td><td class="amount-cell">$8,250</td><td>$343.75 x 24 pay periods</td></tr>
+            <tr><td>Employer annual contribution</td><td class="amount-cell">$1,700</td><td>$70.83 x 24 pay periods</td></tr>
+            <tr><td>Gap to max</td><td class="amount-cell" id="gapToMax">$300</td><td>Increase by ~$12.50/pay to max out</td></tr>
+            <tr><td>Estimated tax savings</td><td class="amount-cell" id="refTaxSavings">--</td><td>Federal + FICA on your contributions</td></tr>
+            <tr><td>HDHP min deductible (family)</td><td class="amount-cell">$3,300</td><td>Required for HSA eligibility</td></tr>
+            <tr><td>HDHP max out-of-pocket (family)</td><td class="amount-cell">$16,600</td><td>2026 limit</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>
-
-<!-- ACTION BAR -->
 <div class="action-bar" id="actionBar">
   <div class="info"><span id="selCount">0</span> selected</div>
   <div class="divider"></div>

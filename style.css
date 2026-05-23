@@ -334,6 +334,11 @@ tr:hover .action-edit,tr:hover .action-delete{opacity:.8}
 @media(max-width:700px){
   .summary{grid-template-columns:1fr}
   .inv-cards{grid-template-columns:1fr!important}
+  .strategy-grid{grid-template-columns:1fr}
+  .tips-grid{grid-template-columns:1fr}
+  .milestone-track{flex-wrap:wrap;gap:16px;justify-content:center}
+  .milestone-track::before{display:none}
+  .alloc-row{grid-template-columns:100px 1fr 45px}
   nav{padding:12px 16px;flex-wrap:wrap;gap:8px}
   .container{padding:20px 16px}
   .form-row{grid-template-columns:1fr!important}
@@ -369,3 +374,73 @@ tr:hover .action-edit,tr:hover .action-delete{opacity:.8}
 .inv-card.combined .inv-card-value{color:#8338ec}
 .inv-card-link{font-size:13px;color:var(--accent);text-decoration:none;font-weight:600}
 .inv-card-link:hover{text-decoration:underline}
+
+/* ── STRATEGY DASHBOARD ── */
+.strategy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.strategy-card{
+  background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:24px;position:relative;overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,.25);animation:fadeUp .45s ease-out both;
+}
+.strategy-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.strategy-card.tax::before{background:linear-gradient(90deg,#00b894,#55efc4)}
+.strategy-card.contrib::before{background:linear-gradient(90deg,#fdcb6e,#f39c12)}
+.strategy-card.alloc::before{background:linear-gradient(90deg,#a29bfe,#6c5ce7)}
+.strategy-icon{font-size:28px;margin-bottom:8px}
+.strategy-card h3{font-size:16px;font-weight:700;margin-bottom:12px}
+.strategy-highlight{font-size:36px;font-weight:800;color:#00b894;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.strategy-highlight-label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px}
+.strategy-list{list-style:none;padding:0;margin:0 0 16px 0}
+.strategy-list li{padding:6px 0;font-size:13px;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,.05)}
+.strategy-list li:last-child{border:none}
+.strategy-detail{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.05)}
+.strategy-detail:last-child{border:none}
+.detail-label{color:var(--text-muted)}
+.detail-value{font-weight:700;color:var(--text)}
+.strategy-note{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:12px;font-size:13px;color:var(--text-muted);line-height:1.5}
+
+/* Contribution progress bar */
+.contrib-progress-wrap{margin-bottom:16px}
+.contrib-progress-bar{height:20px;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden;position:relative}
+.contrib-progress-fill{height:100%;background:linear-gradient(90deg,#fdcb6e,#f39c12);border-radius:10px;transition:width .6s ease}
+.contrib-progress-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-top:6px}
+
+/* Allocation bars */
+.alloc-bars{display:flex;flex-direction:column;gap:12px}
+.alloc-row{display:grid;grid-template-columns:140px 1fr 50px;align-items:center;gap:10px}
+.alloc-label{font-size:12px;color:var(--text-muted)}
+.alloc-bar-wrap{height:14px;background:rgba(255,255,255,.08);border-radius:7px;overflow:hidden}
+.alloc-bar{height:100%;border-radius:7px;transition:width .6s ease}
+.alloc-bar.betterment-bar{background:linear-gradient(90deg,#0070eb,#00b4d8)}
+.alloc-bar.optum-bar{background:linear-gradient(90deg,#ff6b35,#f7931e)}
+.alloc-pct{font-size:13px;font-weight:700;text-align:right}
+
+/* ── MILESTONES ── */
+.milestone-track{display:flex;justify-content:space-between;align-items:flex-start;position:relative;padding:20px 0 0}
+.milestone-track::before{content:'';position:absolute;top:30px;left:5%;right:5%;height:3px;background:rgba(255,255,255,.1);border-radius:2px}
+.milestone{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;z-index:1;flex:1}
+.milestone-marker{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.1);border:3px solid rgba(255,255,255,.2);transition:all .3s}
+.milestone.reached .milestone-marker{background:#00b894;border-color:#55efc4;box-shadow:0 0 12px rgba(0,184,148,.5)}
+.milestone-amount{font-size:14px;font-weight:800;color:rgba(255,255,255,.3)}
+.milestone.reached .milestone-amount{color:#00b894}
+.milestone-label{font-size:11px;color:rgba(255,255,255,.25);text-align:center;max-width:90px}
+.milestone.reached .milestone-label{color:var(--text-muted)}
+
+/* ── TIPS GRID ── */
+.tips-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tip-card{
+  background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:20px;position:relative;overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,.25);animation:fadeUp .45s ease-out both;
+}
+.tip-card:nth-child(2){animation-delay:.06s}
+.tip-card:nth-child(3){animation-delay:.12s}
+.tip-card:nth-child(4){animation-delay:.18s}
+.tip-card:nth-child(5){animation-delay:.24s}
+.tip-card:nth-child(6){animation-delay:.30s}
+.tip-number{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#8338ec,#6930c3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;margin-bottom:10px}
+.tip-card h4{font-size:15px;font-weight:700;margin-bottom:8px}
+.tip-card p{font-size:13px;color:var(--text-muted);line-height:1.5;margin:0}
+
+/* ── REFERENCE TABLE ── */
+.ref-table-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.25)}

@@ -621,7 +621,33 @@ function hideLoading() {
 let balances = []; // { row, date, institution, amount }
 
 // ── Investments: Google Sheets API ──
+async function ensureBalancesSheet() {
+  // Check if the Balances tab exists; create it if not
+  var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.SPREADSHEET_ID + '?fields=sheets.properties.title';
+  var meta = await apiFetch(url);
+  if (!meta) return;
+  var exists = meta.sheets.some(function (s) { return s.properties.title === CONFIG.BALANCE_SHEET_NAME; });
+  if (exists) return;
+
+  // Create the sheet and add headers
+  var batchUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.SPREADSHEET_ID + ':batchUpdate';
+  await apiFetch(batchUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requests: [{ addSheet: { properties: { title: CONFIG.BALANCE_SHEET_NAME } } }] }),
+  });
+  var hdrRange = encodeURIComponent(CONFIG.BALANCE_SHEET_NAME + '!A1:C1');
+  var hdrUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.SPREADSHEET_ID
+    + '/values/' + hdrRange + '?valueInputOption=RAW';
+  await apiFetch(hdrUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values: [['Date', 'Institution', 'Balance']] }),
+  });
+}
+
 async function loadBalances() {
+  await ensureBalancesSheet();
   var range = encodeURIComponent(CONFIG.BALANCE_SHEET_NAME + '!A:C');
   var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.SPREADSHEET_ID + '/values/' + range;
   var data = await apiFetch(url);
@@ -682,6 +708,9 @@ function renderInvestments() {
   document.getElementById('bettermentBalance').textContent = fmt(better);
   document.getElementById('combinedBalance').textContent = fmt(combined);
 
+  // Strategy dashboard
+  renderStrategyDashboard(optum, better, combined);
+
   // Render balance history (most recent first)
   var sorted = balances.slice().sort(function (a, b) {
     return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
@@ -700,6 +729,57 @@ function renderInvestments() {
         + '</tr>';
     }).join('');
   }
+}
+
+// ── Investments: Strategy Dashboard ──
+function renderStrategyDashboard(optum, better, combined) {
+  // Tax savings calculation
+  var annualContrib = 8250; // your employee + employer
+  var marginalRate = 0.32; // estimated federal bracket
+  var ficaRate = 0.0765;
+  var federalSavings = annualContrib * marginalRate;
+  var ficaSavings = annualContrib * ficaRate;
+  var totalTaxSavings = federalSavings + ficaSavings;
+
+  document.getElementById('taxSavings').textContent = fmt(totalTaxSavings) + '/yr';
+  document.getElementById('taxRate').textContent = '32%';
+  document.getElementById('taxAnnualContrib').textContent = fmt(annualContrib);
+  document.getElementById('taxFICA').textContent = fmt(ficaSavings);
+  document.getElementById('refTaxSavings').textContent = fmt(totalTaxSavings);
+
+  // Contribution progress (based on months elapsed in current year)
+  var now = new Date();
+  var monthsElapsed = now.getMonth() + (now.getDate() / 30);
+  var periodsElapsed = Math.floor(monthsElapsed * 2); // semi-monthly
+  var contribSoFar = periodsElapsed * 343.75;
+  var limit2026 = 8550;
+  var pct = Math.min(100, (contribSoFar / limit2026) * 100);
+
+  document.getElementById('contribFill').style.width = pct.toFixed(1) + '%';
+  document.getElementById('contribCurrent').textContent = fmt(contribSoFar) + ' (' + pct.toFixed(0) + '%)';
+  document.getElementById('contribMax').textContent = fmt(limit2026);
+  document.getElementById('gapToMax').textContent = fmt(Math.max(0, limit2026 - 8250));
+
+  // Allocation bars
+  if (combined > 0) {
+    var betterPct = (better / combined) * 100;
+    var optumPct = (optum / combined) * 100;
+    document.getElementById('allocBetter').style.width = betterPct.toFixed(1) + '%';
+    document.getElementById('allocOptum').style.width = optumPct.toFixed(1) + '%';
+    document.getElementById('allocBetterPct').textContent = betterPct.toFixed(1) + '%';
+    document.getElementById('allocOptumPct').textContent = optumPct.toFixed(1) + '%';
+  }
+
+  // Milestones
+  var milestones = document.querySelectorAll('.milestone');
+  milestones.forEach(function (el) {
+    var target = parseFloat(el.dataset.target);
+    if (combined >= target) {
+      el.classList.add('reached');
+    } else {
+      el.classList.remove('reached');
+    }
+  });
 }
 
 async function submitBalance() {
