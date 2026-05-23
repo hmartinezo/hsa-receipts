@@ -230,6 +230,10 @@ function switchView(viewName) {
   if (viewName === 'expenses') {
     refreshExpenses();
   }
+  if (viewName === 'investments') {
+    document.getElementById('balDate').valueAsDate = new Date();
+    refreshInvestments();
+  }
 }
 
 // ── UI: Add Expense ──
@@ -609,6 +613,177 @@ function showLoading(msg) {
 }
 function hideLoading() {
   document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// ── Init ──
+
+// ── Investments: State ──
+let balances = []; // { row, date, institution, amount }
+
+// ── Investments: Google Sheets API ──
+async function loadBalances() {
+  var range = encodeURIComponent(CONFIG.BALANCE_SHEET_NAME + '!A:C');
+  var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.SPREADSHEET_ID + '/values/' + range;
+  var data = await apiFetch(url);
+  if (!data) return;
+
+  var rows = data.values || [];
+  balances = [];
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r[0]) continue;
+    balances.push({
+      row: i + 1,
+      date: parseSheetDate(r[0] || ''),
+      institution: r[1] || '',
+      amount: parseFloat((r[2] || '0').replace(/[$,]/g, '')) || 0,
+    });
+  }
+}
+
+async function appendBalance(date, institution, amount) {
+  var range = encodeURIComponent(CONFIG.BALANCE_SHEET_NAME + '!A:C');
+  var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.SPREADSHEET_ID
+    + '/values/' + range + ':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
+
+  await apiFetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values: [[toSheetDate(date), institution, amount]] }),
+  });
+}
+
+// ── Investments: UI ──
+async function refreshInvestments() {
+  showLoading('Loading balances...');
+  try {
+    await loadBalances();
+    renderInvestments();
+  } catch (err) {
+    showToast('Failed to load balances: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function getLatestBalance(institution) {
+  var matching = balances
+    .filter(function (b) { return b.institution === institution; })
+    .sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  return matching.length > 0 ? matching[0].amount : 0;
+}
+
+function renderInvestments() {
+  var optum = getLatestBalance('Optum Bank');
+  var better = getLatestBalance('Betterment');
+  var combined = optum + better;
+
+  document.getElementById('optumBalance').textContent = fmt(optum);
+  document.getElementById('bettermentBalance').textContent = fmt(better);
+  document.getElementById('combinedBalance').textContent = fmt(combined);
+
+  // Render balance history (most recent first)
+  var sorted = balances.slice().sort(function (a, b) {
+    return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
+  });
+
+  var tbody = document.getElementById('balanceBody');
+  if (sorted.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3"><div class="empty-state">'
+      + '<div class="empty-icon">📊</div><p>No balance entries yet. Add one above.</p></div></td></tr>';
+  } else {
+    tbody.innerHTML = sorted.map(function (b) {
+      return '<tr>'
+        + '<td>' + fmtDateDisplay(b.date) + '</td>'
+        + '<td>' + escHtml(b.institution) + '</td>'
+        + '<td class="amount-cell">' + fmt(b.amount) + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+}
+
+async function submitBalance() {
+  var date = document.getElementById('balDate').value;
+  var institution = document.getElementById('balInstitution').value;
+  var amount = document.getElementById('balAmount').value;
+
+  if (!date) { showToast('Please select a date.', 'error'); return; }
+  if (!amount || parseFloat(amount) < 0) { showToast('Please enter a valid balance.', 'error'); return; }
+
+  var btn = document.getElementById('balSubmitBtn');
+  var txtEl = document.getElementById('balSubmitText');
+  btn.disabled = true;
+  txtEl.innerHTML = '<span class="spinner"></span> Saving...';
+
+  try {
+    await appendBalance(date, institution, parseFloat(amount).toFixed(2));
+    showToast('Balance saved!', 'success');
+    document.getElementById('balAmount').value = '';
+    await refreshInvestments();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    txtEl.textContent = '💾 Save Balance';
+  }
+}
+
+// ── Investments: Projection Calculator ──
+function runProjection() {
+  var contribution = parseFloat(document.getElementById('projContribution').value) || 0;
+  var freqPerYear = parseInt(document.getElementById('projFrequency').value) || 26;
+  var annualReturn = (parseFloat(document.getElementById('projReturn').value) || 7) / 100;
+  var years = parseInt(document.getElementById('projYears').value) || 14;
+
+  var currentBalance = getLatestBalance('Optum Bank') + getLatestBalance('Betterment');
+  var balance = currentBalance;
+  var totalContributions = 0;
+  var currentAge = 51;
+
+  var rows = [];
+
+  for (var y = 1; y <= years; y++) {
+    var yearContrib = contribution * freqPerYear;
+    // Apply contributions spread through the year with monthly compounding approximation
+    var monthlyRate = annualReturn / 12;
+    var monthlyContrib = yearContrib / 12;
+
+    // Compound existing balance for the year
+    for (var m = 0; m < 12; m++) {
+      balance = balance * (1 + monthlyRate) + monthlyContrib;
+    }
+    totalContributions += yearContrib;
+
+    var growth = balance - currentBalance - totalContributions;
+
+    rows.push({
+      year: new Date().getFullYear() + y,
+      age: currentAge + y,
+      contributions: totalContributions,
+      growth: growth,
+      balance: balance,
+    });
+  }
+
+  var finalBalance = balance;
+  var totalGrowth = finalBalance - currentBalance - totalContributions;
+
+  document.getElementById('projTotal').textContent = fmt(finalBalance);
+  document.getElementById('projContribs').textContent = fmt(currentBalance + totalContributions);
+  document.getElementById('projGrowth').textContent = fmt(totalGrowth);
+
+  var tbody = document.getElementById('projBody');
+  tbody.innerHTML = rows.map(function (r) {
+    return '<tr>'
+      + '<td>' + r.year + '</td>'
+      + '<td>' + r.age + '</td>'
+      + '<td class="amount-cell">' + fmt(r.contributions) + '</td>'
+      + '<td style="color:var(--success);font-weight:700">' + fmt(r.growth) + '</td>'
+      + '<td style="font-weight:800;color:#8338ec">' + fmt(r.balance) + '</td>'
+      + '</tr>';
+  }).join('');
+
+  document.getElementById('projResults').style.display = 'block';
 }
 
 // ── Init ──

@@ -14,6 +14,9 @@ const CONFIG = {
   // ── Sheet tab name ──
   SHEET_NAME: 'Sheet1',
 
+  // ── Balance tracking sheet tab ──
+  BALANCE_SHEET_NAME: 'Balances',
+
   // ── Allowed emails (lowercase) ──
   ALLOWED_EMAILS: ['hmartinezo@gmail.com'],
 

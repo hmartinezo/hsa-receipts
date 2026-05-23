@@ -14,6 +14,7 @@
   <div class="nav-links">
     <button class="active" data-view="add">Add Expense</button>
     <button data-view="expenses">My Expenses</button>
+    <button data-view="investments">Investments</button>
   </div>
   <div class="nav-user">
     <span id="userEmail"></span>
@@ -126,6 +127,146 @@
         </thead>
         <tbody id="expenseBody"></tbody>
       </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════ INVESTMENTS VIEW ═══════════ -->
+<div class="view" id="view-investments">
+  <div class="container">
+
+    <!-- Current Balances -->
+    <div class="inv-section">
+      <h2>📊 Current Balances</h2>
+      <div class="inv-cards">
+        <div class="inv-card optum">
+          <div class="inv-card-label">Optum Bank</div>
+          <div class="inv-card-sub">HSA Cash + Mutual Funds</div>
+          <div class="inv-card-value" id="optumBalance">--</div>
+          <a class="inv-card-link" href="https://account.optumbank.com/" target="_blank" rel="noopener">Open Optum Bank &rarr;</a>
+        </div>
+        <div class="inv-card betterment">
+          <div class="inv-card-label">Betterment</div>
+          <div class="inv-card-sub">HSA Managed Investments</div>
+          <div class="inv-card-value" id="bettermentBalance">--</div>
+          <a class="inv-card-link" href="https://wwws.betterment.com/" target="_blank" rel="noopener">Open Betterment &rarr;</a>
+        </div>
+        <div class="inv-card combined">
+          <div class="inv-card-label">Combined Total</div>
+          <div class="inv-card-sub">All HSA Assets</div>
+          <div class="inv-card-value" id="combinedBalance">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log Balance -->
+    <div class="form-card">
+      <h2>✏️ Update Balance</h2>
+      <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
+        <div class="form-group">
+          <label for="balDate">Date</label>
+          <input type="date" id="balDate">
+        </div>
+        <div class="form-group">
+          <label for="balInstitution">Institution</label>
+          <select id="balInstitution">
+            <option value="Optum Bank">Optum Bank</option>
+            <option value="Betterment">Betterment</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="balAmount">Balance ($)</label>
+          <input type="number" id="balAmount" placeholder="0.00" min="0" step="0.01">
+        </div>
+      </div>
+      <button class="submit-btn" id="balSubmitBtn" onclick="submitBalance()">
+        <span id="balSubmitText">💾 Save Balance</span>
+      </button>
+    </div>
+
+    <!-- Balance History -->
+    <div class="inv-section">
+      <h2>📅 Balance History</h2>
+      <div class="table-card">
+        <table class="data-table" id="balanceTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Institution</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="balanceBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Projection Calculator -->
+    <div class="inv-section">
+      <h2>🔮 Growth Projection</h2>
+      <p class="inv-description">See how your HSA could grow if you keep contributing and don't withdraw. Based on your current combined balance.<br><small style="color:var(--text-muted)">Default: $272.92 individual + $70.83 employer = $343.75/semi-monthly ($8,250/yr family max)</small></p>
+
+      <div class="form-card" style="margin-top:16px">
+        <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
+          <div class="form-group">
+            <label for="projContribution">Contribution / Period ($)</label>
+            <input type="number" id="projContribution" value="343.75" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label for="projFrequency">Frequency</label>
+            <select id="projFrequency">
+              <option value="26">Biweekly (26/yr)</option>
+              <option value="24" selected>Semi-monthly (24/yr)</option>
+              <option value="12">Monthly (12/yr)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="projReturn">Annual Return (%)</label>
+            <input type="number" id="projReturn" value="7" min="0" max="30" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="projYears">Years</label>
+            <input type="number" id="projYears" value="14" min="1" max="50" step="1">
+          </div>
+        </div>
+        <button class="submit-btn" onclick="runProjection()" style="background:linear-gradient(135deg,#8338ec,#6930c3)">
+          <span>📈 Calculate Projection</span>
+        </button>
+      </div>
+
+      <!-- Projection Results -->
+      <div id="projResults" style="display:none">
+        <div class="inv-cards" style="margin-top:24px">
+          <div class="inv-card" style="--card-accent:#8338ec">
+            <div class="inv-card-label">Projected Value at 65</div>
+            <div class="inv-card-value" id="projTotal" style="color:#8338ec">--</div>
+          </div>
+          <div class="inv-card" style="--card-accent:var(--accent)">
+            <div class="inv-card-label">Total Contributions</div>
+            <div class="inv-card-value" id="projContribs" style="color:var(--accent)">--</div>
+          </div>
+          <div class="inv-card" style="--card-accent:var(--success)">
+            <div class="inv-card-label">Investment Growth</div>
+            <div class="inv-card-value" id="projGrowth" style="color:var(--success)">--</div>
+          </div>
+        </div>
+
+        <div class="table-card" style="margin-top:20px">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Age</th>
+                <th>Contributions</th>
+                <th>Growth</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody id="projBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
   </div>

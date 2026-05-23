@@ -333,11 +333,39 @@ tr:hover .action-edit,tr:hover .action-delete{opacity:.8}
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
   .summary{grid-template-columns:1fr}
+  .inv-cards{grid-template-columns:1fr!important}
   nav{padding:12px 16px;flex-wrap:wrap;gap:8px}
   .container{padding:20px 16px}
-  .form-row{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr!important}
   .toolbar{flex-direction:column;align-items:flex-start}
   .data-table{font-size:13px}
   .data-table th,.data-table td{padding:10px 8px}
   .table-card{overflow-x:auto}
 }
+
+/* ── INVESTMENTS VIEW ── */
+.inv-section{margin-bottom:32px}
+.inv-section h2{font-size:20px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.inv-description{color:var(--text-muted);font-size:14px;line-height:1.6}
+
+.inv-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.inv-card{
+  background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:24px;position:relative;overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,.25);animation:fadeUp .45s ease-out both;
+}
+.inv-card:nth-child(2){animation-delay:.08s}
+.inv-card:nth-child(3){animation-delay:.16s}
+.inv-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.inv-card.optum::after{background:linear-gradient(90deg,#ff6b35,#f7931e)}
+.inv-card.betterment::after{background:linear-gradient(90deg,#0070eb,#00b4d8)}
+.inv-card.combined::after{background:linear-gradient(90deg,#8338ec,#c77dff)}
+
+.inv-card-label{font-size:16px;font-weight:700;margin-bottom:2px}
+.inv-card-sub{font-size:12px;color:var(--text-muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+.inv-card-value{font-size:32px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;margin-bottom:8px}
+.inv-card.optum .inv-card-value{color:#ff6b35}
+.inv-card.betterment .inv-card-value{color:#0070eb}
+.inv-card.combined .inv-card-value{color:#8338ec}
+.inv-card-link{font-size:13px;color:var(--accent);text-decoration:none;font-weight:600}
+.inv-card-link:hover{text-decoration:underline}
