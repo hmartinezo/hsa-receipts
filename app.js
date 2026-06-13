@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════
    HSA Tracker – Application Logic
    Auth, Google Sheets, Google Drive, UI
    ═══════════════════════════════════════════ */
@@ -144,6 +144,18 @@ async function updateExpenseRow(sheetRow, name, date, amount) {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ values: [[name, toSheetDate(date), amount]] }),
+  });
+}
+
+async function updateReceiptLink(sheetRow, link) {
+  const range = encodeURIComponent(CONFIG.SHEET_NAME + '!F' + sheetRow);
+  const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.SPREADSHEET_ID
+    + '/values/' + range + '?valueInputOption=USER_ENTERED';
+
+  await apiFetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values: [[link]] }),
   });
 }
 
@@ -524,11 +536,17 @@ function openEditModal(row) {
   document.getElementById('editName').value = e.name;
   document.getElementById('editDate').value = e.date;
   document.getElementById('editAmount').value = e.amount;
+  document.getElementById('editFileInput').value = '';
+  const cur = document.getElementById('editReceiptCurrent');
+  cur.innerHTML = e.receipt
+    ? 'Current: <a href="' + escAttr(e.receipt) + '" target="_blank" rel="noopener" style="color:var(--accent)">🔗 View receipt</a>'
+    : '<span style="color:var(--text-muted)">No receipt attached</span>';
   document.getElementById('editModal').classList.add('show');
 }
 
 function closeEditModal() {
   document.getElementById('editModal').classList.remove('show');
+  document.getElementById('editFileInput').value = '';
 }
 
 async function saveEdit() {
@@ -547,11 +565,21 @@ async function saveEdit() {
 
   try {
     await updateExpenseRow(row, name, date, parseFloat(amount).toFixed(2));
+
+    const editFile = document.getElementById('editFileInput').files[0];
+    let receiptLink = null;
+    if (editFile) {
+      btn.textContent = 'Uploading receipt...';
+      receiptLink = await uploadReceipt(editFile);
+      await updateReceiptLink(row, receiptLink);
+    }
+
     const e = expenses.find(x => x.row === row);
     if (e) {
       e.name = name;
       e.date = date;
       e.amount = parseFloat(amount);
+      if (receiptLink) e.receipt = receiptLink;
     }
     closeEditModal();
     renderExpenses();
